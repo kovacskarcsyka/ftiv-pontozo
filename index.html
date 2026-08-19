@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="hu">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+<link rel="manifest" href="manifest.json">
+
+<title>FTIV Pontozó</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://unpkg.com/html5-qrcode" defer></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script src="app.js" defer></script>
+
+</head>
+
+<body>
+
+    <h1 id="versenyNev">Verseny betöltése...</h1>
+
+    <!-- QR BEOLVASÓ MÓD -->
+    <div id="qrMod">
+
+        <div id="reader"></div>
+
+        <div id="lista"></div>
+
+        <button id="inditBtn">
+            Pontozás indítása
+        </button>
+
+    </div>
+
+    <!-- PONTOZÓ MÓD -->
+    <div id="pontozoMod" style="display:none;">
+
+        <div id="celNavigacio"></div>
+
+        <div id="versenyzoTabok"></div>
+
+        <div id="versenyzoPanel"></div>
+
+        <div id="statisztika"></div>
+
+        <div id="eredmenyTabla"></div>
+        <button id="lezarasBtn">
+    🏁 Verseny lezárása
+</button>
+<div id="qrEredmeny"></div>
+
+    </div>
+
+</body>
+
+</html>

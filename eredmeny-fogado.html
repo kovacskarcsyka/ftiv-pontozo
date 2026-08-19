@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>Eredmény fogadó</title>
+
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+
+        body {
+
+            font-family: Arial, sans-serif;
+            padding: 20px;
+
+        }
+        table {
+
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+
+        }
+
+        th, td {
+
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+
+        }
+
+        th {
+            background: #eee;
+        }
+
+    </style>
+
+</head>
+<body>
+
+<h1>Eredmény fogadó</h1>
+
+<div id="reader"></div>
+
+<input
+    type="file"
+    id="excelFile"
+    accept=".xlsx,.xls">
+
+<button id="exportBtn">
+    Excel export
+</button>
+
+<!button id="excelKitoltesBtn">
+    Excel letöltése
+</button>
+
+<table id="tabla">
+
+    <thead>
+
+        <tr>
+           <th>FTIV</th>
+           <th>Pont</th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+    </tbody>
+
+</table>
+
+<script>
+    let excelAdatok = [];
+    let munkafuzet = null;
+    let munkalapNev = "";
+
+function onScanSuccess(text) {
+
+    let sorok =
+        text.split(";")
+            .filter(s => s.trim() !== "");
+
+    let tbody =
+        document.querySelector(
+            "#tabla tbody"
+        );
+
+    tbody.innerHTML = "";
+
+    sorok.forEach(sor => {
+
+        let adatok =
+            sor.split("|");
+
+        let tr =
+            document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${adatok[0] || ""}</td>
+            <td>${adatok[1] || ""}</td>
+`;
+
+        tbody.appendChild(tr);
+
+    });
+
+}
+
+const scanner =
+    new Html5QrcodeScanner(
+        "reader",
+        {
+            fps: 10,
+            qrbox: 700
+        }
+    );
+
+scanner.render(onScanSuccess);
+document
+    .getElementById("excelFile")
+    .addEventListener(
+        "change",
+        excelBetoltes
+    );
+
+function excelBetoltes(e) {
+
+    let fajl =
+        e.target.files[0];
+
+    let reader =
+        new FileReader();
+
+    reader.onload = function(evt) {
+
+        let adatok =
+            new Uint8Array(evt.target.result);
+
+        munkafuzet =
+            XLSX.read(
+                adatok,
+                {
+                    type: "array"
+                }
+            );
+
+        munkalapNev =
+            munkafuzet.SheetNames[0];
+
+        let munkalap =
+            munkafuzet.Sheets[munkalapNev];
+
+        excelAdatok =
+            XLSX.utils.sheet_to_json(
+                munkalap
+            );
+
+        console.log(excelAdatok);
+
+    };
+
+    reader.readAsArrayBuffer(fajl);
+
+}
+document
+    .getElementById("exportBtn")
+    .addEventListener(
+        "click",
+        exportalas
+    );
+
+function exportalas() {
+
+    let csv = "FTIV;Pont\n";
+
+    document
+        .querySelectorAll("#tabla tbody tr")
+        .forEach(tr => {
+
+            let ftiv =
+                tr.children[0].innerText;
+
+            let pont =
+                tr.children[1].innerText;
+
+            csv +=
+                ftiv +
+                ";" +
+                pont +
+                "\n";
+
+        });
+
+    let blob =
+        new Blob(
+            [csv],
+            {
+                type:
+                "text/csv;charset=utf-8;"
+            }
+        );
+
+    let url =
+        URL.createObjectURL(blob);
+
+    let a =
+        document.createElement("a");
+
+    a.href = url;
+
+    a.download =
+        "pontok.csv";
+
+    a.click();
+
+}
+document
+    .getElementById("excelKitoltesBtn")
+    .addEventListener(
+        "click",
+        excelKitoltese
+    );
+
+function excelKitoltese() {
+
+    if (!munkafuzet) {
+
+        alert("Először tölts be egy Excel fájlt!");
+        return;
+
+    }
+
+    let munkalap =
+        munkafuzet.Sheets[munkalapNev];
+
+    let tartomany =
+        XLSX.utils.decode_range(
+            munkalap["!ref"]
+        );
+
+    document
+        .querySelectorAll("#tabla tbody tr")
+        .forEach(tr => {
+
+            let ftiv =
+                tr.children[0].innerText.trim();
+
+            let pont =
+                tr.children[1].innerText.trim();
+
+            for (
+                let r = tartomany.s.r;
+                r <= tartomany.e.r;
+                r++
+            ) {
+
+                let qrCella =
+                    XLSX.utils.encode_cell({
+                        r: r,
+                        c: 8
+                    });
+
+                let qrErtek =
+    munkalap[qrCella]
+        ? String(
+            munkalap[qrCella].v
+          ).trim()
+        : "";
+
+console.log(
+    qrCella,
+    "=>",
+    qrErtek,
+    "KERES:",
+    ftiv
+);
+
+if (qrErtek === ftiv) {
+
+                    let pontCella =
+                        XLSX.utils.encode_cell({
+                            r: r,
+                            c: 7
+                        });
+
+                    munkalap[pontCella] = {
+                        t: "n",
+                        v: Number(pont)
+                    };
+
+                    console.log(
+                        "Találat:",
+                        ftiv,
+                        "->",
+                        pontCella,
+                        "=",
+                        pont
+                    );
+
+                    break;
+
+                }
+
+            }
+
+        });
+
+    XLSX.writeFile(
+        munkafuzet,
+        "eredmenyek_kitoltve.xlsx"
+    );
+
+    alert(
+        "Excel kitöltve!"
+    );
+
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,344 @@
+body {
+    margin: 0;
+    padding: 15px;
+    font-family: Arial, sans-serif;
+    background: #ededed;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* QR rész */
+
+#reader {
+    max-width: 350px;
+    margin: auto;
+}
+
+#lista {
+    margin-top: 15px;
+}
+
+#inditBtn {
+    width: 100%;
+    height: 65px;
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+/* Célpont fejléc */
+
+#celNavigacio {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+#celNavigacio button {
+    width: 70px;
+    height: 70px;
+    border: none;
+    border-radius: 50%;
+    font-size: 30px;
+    background: white;
+}
+
+.celFejlec {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+/* Fülek */
+
+#versenyzoTabok {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.versenyzoTab {
+    width: 60px;
+    height: 60px;
+    background: white;
+    border-radius: 50%;
+    border: 2px solid #cccccc;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.aktivTab {
+    border: 4px solid black;
+    background: #ffe5ee;
+}
+
+/* Versenyző neve */
+
+.versenyzoNev {
+    text-align: center;
+    font-size: 42px;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+/* Lövéskártyák */
+
+.lovesekSor {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.lovesKartya {
+    width: 110px;
+    height: 110px;
+
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #cccccc;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 56px;
+    font-weight: bold;
+}
+
+/* Pontgombok */
+
+.pontGombok {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.pontGombok button {
+
+    width: 130px;
+    height: 130px;
+
+    border: none;
+    border-radius: 12px;
+
+    color: white;
+
+    font-size: 52px;
+    font-weight: bold;
+}
+
+.p10 {
+    background: #8b9097;
+}
+
+.p8 {
+    background: #73b33d;
+}
+
+.p5 {
+    background: #f05e2f;
+}
+
+.p0 {
+    background: #5aa6cf;
+}
+
+/* Visszavonás */
+
+.visszaBtn {
+    width: 100%;
+    height: 60px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: #757575;
+    color: white;
+
+    font-size: 20px;
+
+    margin-bottom: 20px;
+}
+
+/* Versenyző navigáció */
+
+.nav {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.nav button {
+
+    width: 180px;
+    height: 60px;
+
+    font-size: 18px;
+
+    border: none;
+    border-radius: 10px;
+}
+
+/* Statisztika */
+
+#statisztika {
+
+    background: white;
+
+    padding: 15px;
+
+    border-radius: 10px;
+
+    margin-top: 20px;
+}
+
+.statFejlec {
+
+    text-align: center;
+
+    font-size: 30px;
+    font-weight: bold;
+
+    margin-bottom: 15px;
+}
+
+.statSor {
+
+    display: flex;
+
+    justify-content: space-around;
+
+    align-items: center;
+}
+
+.statDoboz {
+
+    text-align: center;
+}
+
+.statPont {
+
+    color: white;
+
+    font-size: 32px;
+
+    padding: 10px 20px;
+
+    border-radius: 10px;
+}
+
+.statDb {
+
+    font-size: 32px;
+
+    font-weight: bold;
+
+    margin-top: 10px;
+}
+
+/* Eredménytábla */
+
+#eredmenyTabla {
+
+    background: white;
+
+    margin-top: 20px;
+
+    padding: 15px;
+
+    border-radius: 10px;
+}
+
+/* Mobil */
+
+@media (max-width: 700px) {
+
+    .pontGombok button {
+
+        width: 90px;
+        height: 90px;
+        font-size: 42px;
+
+    }
+
+    .lovesKartya {
+
+        width: 80px;
+        height: 80px;
+
+        font-size: 40px;
+
+    }
+
+    .versenyzoNev {
+
+        font-size: 32px;
+
+    }
+
+    .nav {
+
+        flex-direction: column;
+
+    }
+
+    .nav button {
+
+        width: 100%;
+
+    }
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border: 1px solid #dddddd;
+    padding: 8px;
+    text-align: center;
+}
+
+th {
+    background: #f2f2f2;
+}
+
+#eredmenyTabla h3 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+#lezarasBtn {
+
+    width: 100%;
+    height: 70px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: #c62828;
+    color: white;
+
+    font-size: 24px;
+    font-weight: bold;
+
+    margin-top: 20px;
+}
