@@ -974,20 +974,17 @@ document
                     .value
                     .trim();
 
-           if (
+           if (foNev !== "") {
+
+    nevek.push(foNev);
+
+}
+else if (
     document.getElementById("edzesTipus").value
     === "egyeni"
 ) {
 
-    if (foNev !== "") {
-
-        nevek.push(foNev);
-
-    } else {
-
-        nevek.push("Lövő 1");
-
-    }
+    nevek.push("Lövő 1");
 
 }
 
