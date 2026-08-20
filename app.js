@@ -1,10 +1,10 @@
 let versenyLezarva = false;
 let versenyBeallitas = null;
-
+let aktualisEdzesNev = "";
 let aktualisCel = 0;
 let aktualisVersenyzo = 0;
-
-const versenyzok = [];
+let aktualisMod = "verseny";
+let versenyzok = [];
 
 async function versenyBetoltese() {
 
@@ -99,7 +99,10 @@ function pontozasInditas() {
         return;
 
     }
+console.log("ELREJTEM A QRMOD-OT");
 
+document.getElementById("qrMod").style.display = "none";
+document.getElementById("pontozoMod").style.display = "block";
     document.getElementById("qrMod").style.display = "none";
 
     document.getElementById("pontozoMod").style.display = "block";
@@ -389,11 +392,20 @@ function versenyLezarasa() {
 
     versenyLezarva = true;
 
-alert(
-    "A verseny sikeresen lezárva!"
-);
+if (aktualisMod == "verseny") {
 
-qrGeneralas();
+    alert(
+        "A verseny sikeresen lezárva!"
+    );
+
+    qrGeneralas();
+
+}
+else {
+
+    edzesMentese();
+
+}
 
 }
 
@@ -417,33 +429,7 @@ function osszPont(v) {
 }
 
 function statisztika(v) {
-
-    let s10 = 0;
-    let s8 = 0;
-    let s5 = 0;
-    let s0 = 0;
-
-    v.celok.forEach(cel => {
-
-        if (!cel) return;
-
-        cel.forEach(p => {
-
-            if (p == 10) s10++;
-            if (p == 8) s8++;
-            if (p == 5) s5++;
-            if (p == 0) s0++;
-
-        });
-
-    });
-
-    return {
-        s10,
-        s8,
-        s5,
-        s0
-    };
+    return {};
 }
 
 function rajzolCelFejlec() {
@@ -480,35 +466,45 @@ function rajzol() {
 
     tabok.innerHTML = "";
 
-    versenyzok.forEach((v, index) => {
+    let aktualisV =
+    versenyzok[aktualisVersenyzo];
 
-        let aktiv =
-            index === aktualisVersenyzo
-                ? "aktivTab"
-                : "";
+let rovid =
+    aktualisV.nev
+        .split(" ")
+        .map(x => x[0])
+        .join("")
+        .substring(0, 2);
 
-        let rovid =
-            v.nev
-                .split(" ")
-                .map(x => x[0])
-                .join("")
-                .substring(0, 2);
+tabok.innerHTML = `
+    <div class="valtoSor">
 
-        tabok.innerHTML += `
-
-            <div
-                class="versenyzoTab ${aktiv}"
-                onclick="
-                    aktualisVersenyzo=${index};
+        <button
+            onclick="
+                if (aktualisVersenyzo > 0) {
+                    aktualisVersenyzo--;
                     rajzol();
-                ">
+                }
+            ">
+            ◀
+        </button>
 
-                ${rovid}
+        <div class="versenyzoTab aktivTab">
+            ${rovid || "??"}
+        </div>
 
-            </div>
+        <button
+            onclick="
+                if (aktualisVersenyzo < versenyzok.length - 1) {
+                    aktualisVersenyzo++;
+                    rajzol();
+                }
+            ">
+            ▶
+        </button>
 
-        `;
-    });
+    </div>
+`;
 
     let v =
         versenyzok[aktualisVersenyzo];
@@ -537,23 +533,62 @@ function rajzol() {
 
     pontErtekek().forEach(p => {
 
-        gombok += `
+       let szin = "#607d8b";
+let betuSzin = "white";
+let keret = "none";
 
-            <button
-                class="p${p}"
-                onclick="pontHozzaadas(${p})">
+if (p == 0) {
 
-                ${p}
+    szin = "white";
+    betuSzin = "black";
+    keret = "2px solid black";
 
-            </button>
+}
+else if (p <= 2) {
 
-        `;
+    szin = "#bdbdbd";
+
+}
+else if (p <= 4) {
+
+    szin = "#222222";
+
+}
+else if (p <= 6) {
+
+    szin = "#2196f3";
+
+}
+else if (p <= 8) {
+
+    szin = "#e53935";
+
+}
+else {
+
+    szin = "#fbc02d";
+    betuSzin = "black";
+
+}
+
+gombok += `
+
+    <button
+        style="
+            background:${szin};
+            color:${betuSzin};
+            border:${keret};
+        "
+        onclick="pontHozzaadas(${p})">
+
+        ${p}
+
+    </button>
+
+`;
     });
 
-    let stat =
-        statisztika(v);
-
-    document.getElementById("versenyzoPanel").innerHTML = `
+       document.getElementById("versenyzoPanel").innerHTML = `
 
         <div class="versenyzoKartya">
 
@@ -580,7 +615,86 @@ function rajzol() {
         </div>
 
     `;
+let statHtml = "";
 
+versenyBeallitas.pontok.forEach(p => {
+
+    let db = 0;
+
+    v.celok.forEach(cel => {
+
+        if (!cel) return;
+
+        cel.forEach(loves => {
+
+            if (loves == p) {
+                db++;
+            }
+
+        });
+
+    });
+let szin = "#607d8b";
+let betuSzin = "white";
+let keret = "none";
+
+if (p == 0) {
+
+    szin = "white";
+    betuSzin = "black";
+    keret = "2px solid black";
+
+}
+else if (p <= 2) {
+
+    szin = "#bdbdbd";
+
+}
+else if (p <= 4) {
+
+    szin = "#222222";
+
+}
+else if (p <= 6) {
+
+    szin = "#2196f3";
+
+}
+else if (p <= 8) {
+
+    szin = "#e53935";
+
+}
+else {
+
+    szin = "#fbc02d";
+    betuSzin = "black";
+
+}
+    statHtml += `
+
+        <div class="statDoboz">
+
+            <div
+    class="statPont"
+    style="
+        background:${szin};
+        color:${betuSzin};
+        border:${keret};
+    "
+>
+    ${p}
+</div>
+
+            <div class="statDb">
+                ${db}
+            </div>
+
+        </div>
+
+    `;
+
+});
     document.getElementById("statisztika").innerHTML = `
 
         <div class="statFejlec">
@@ -592,27 +706,9 @@ function rajzol() {
 
         <div class="statSor">
 
-            <div class="statDoboz">
-                <div class="statPont p10">10</div>
-                <div class="statDb">${stat.s10}</div>
-            </div>
+    ${statHtml}
 
-            <div class="statDoboz">
-                <div class="statPont p8">8</div>
-                <div class="statDb">${stat.s8}</div>
-            </div>
-
-            <div class="statDoboz">
-                <div class="statPont p5">5</div>
-                <div class="statDb">${stat.s5}</div>
-            </div>
-
-            <div class="statDoboz">
-                <div class="statPont p0">0</div>
-                <div class="statDb">${stat.s0}</div>
-            </div>
-
-        </div>
+</div>
 
     `;
 let tabla = `
@@ -665,31 +761,185 @@ document.getElementById("eredmenyTabla").innerHTML = tabla;
 }
 
 window.onload = async function () {
-    await versenyBetoltese();
+   await versenyBetoltese();
+   const pontValaszto =
+    document.getElementById("pontValaszto");
 
-    document
-        .getElementById("inditBtn")
-        .addEventListener(
-            "click",
-            pontozasInditas
+for (let i = 0; i <= 11; i++) {
+
+    const gomb =
+        document.createElement("button");
+
+    gomb.type = "button";
+
+    gomb.innerText = i;
+gomb.addEventListener(
+    "click",
+    () => {
+
+        gomb.classList.toggle("kivalasztottPont");
+
+        let pontok = [];
+
+        document
+            .querySelectorAll(
+                "#pontValaszto .kivalasztottPont"
+            )
+            .forEach(g => {
+
+                pontok.push(
+                    parseInt(g.innerText)
+                );
+
+            });
+
+        pontok.sort(
+            (a, b) => b - a
         );
 
-    const qrScanner =
-        new Html5QrcodeScanner(
-            "reader",
-            {
-                fps: 10,
-                qrbox: 250
-            }
-        );
+        document
+            .getElementById("edzesPontok")
+            .value =
+                pontok.join(",");
 
-    qrScanner.render(onScanSuccess);
+    }
+);
+    pontValaszto.appendChild(gomb);
+
+}
+document
+    .getElementById("inditBtn")
+    .addEventListener(
+        "click",
+        pontozasInditas
+    );
+   // qrScanner.render(onScanSuccess);
+document
+    .getElementById("versenyModeBtn")
+    .addEventListener("click", () => {
+        aktualisMod = "verseny";
+
+        document.getElementById("fomenu").style.display = "none";
+        document.getElementById("versenyNev").style.display = "block";
+        document.getElementById("qrMod").style.display = "block";
+
+   const qrScanner =
+    new Html5Qrcode("reader");
+
+qrScanner.start(
+    { facingMode: "environment" },
+    {
+        fps: 20,
+        qrbox: {
+            width: 200,
+            height: 200
+}
+    },
+    onScanSuccess
+)
+.then(() => {
+
+    const video = document.querySelector("#reader video");
+
+    if (video) {
+    video.style.width = "450px";
+    video.style.height = "450px";
+}
+
+const reader = document.getElementById("reader");
+
+if (reader) {
+    reader.style.width = "450px";
+    reader.style.height = "450px";
+    reader.style.margin = "20px auto";
+}
+
+})
+.catch(error => {
+    console.error("KAMERA HIBA:", error);
+});
+        }
+    );
+
+document
+    .getElementById("edzesModeBtn")
+    .addEventListener(
+        "click",
+        () => {
+
+            document
+                .getElementById("fomenu")
+                .style.display = "none";
+
+            document
+                .getElementById("edzesMod")
+                .style.display = "block";
+
+        }
+    );
 document
     .getElementById("lezarasBtn")
     .addEventListener(
         "click",
         versenyLezarasa
     );
+document
+    .getElementById("edzesTipus")
+    .addEventListener(
+        "change",
+        function () {
+
+            document
+                .getElementById("csoportosBlokk")
+                .style.display =
+                    this.value === "csoportos"
+                    ? "block"
+                    : "none";
+        }
+    );
+
+document
+    .getElementById("ujEdzotarsBtn")
+    .addEventListener(
+        "click",
+        () => {
+
+            const sor =
+    document.createElement("div");
+
+sor.className =
+    "edzotarsSor";
+
+const ujInput =
+    document.createElement("input");
+
+ujInput.type = "text";
+
+ujInput.className =
+    "edzotarsNev";
+
+ujInput.placeholder =
+    "Név";
+
+const torlesBtn =
+    document.createElement("button");
+
+torlesBtn.textContent = "🗑";
+
+torlesBtn.onclick = () => {
+    sor.remove();
+};
+
+sor.appendChild(ujInput);
+sor.appendChild(torlesBtn);
+
+document
+    .getElementById("edzotarsLista")
+    .appendChild(sor);
+
+        }
+    );
+
 };
 if ("serviceWorker" in navigator) {
 
@@ -710,5 +960,242 @@ if ("serviceWorker" in navigator) {
             );
 
         });
+document
+    .getElementById("edzesInditBtn")
+    .addEventListener(
+        "click",
+        () => {
+             aktualisMod = "edzes";
+            const nevek = [];
+
+            const foNev =
+                document
+                    .getElementById("edzesLovoNev")
+                    .value
+                    .trim();
+
+           if (
+    document.getElementById("edzesTipus").value
+    === "egyeni"
+) {
+
+    if (foNev !== "") {
+
+        nevek.push(foNev);
+
+    } else {
+
+        nevek.push("Lövő 1");
+
+    }
 
 }
+
+            document
+                .querySelectorAll(".edzotarsNev")
+                .forEach(elem => {
+
+                    const nev =
+                        elem.value.trim();
+
+                    if (nev !== "") {
+                        nevek.push(nev);
+                    }
+
+                });
+
+            document
+                .getElementById("edzesMod")
+                .style.display = "none";
+
+            document
+                .getElementById("pontozoMod")
+                .style.display = "block";
+versenyBeallitas.celokSzama =
+    parseInt(
+        document.getElementById("edzesCelok").value
+    );
+
+versenyBeallitas.lovesekCelonkent =
+    parseInt(
+        document.getElementById("edzesLovesek").value
+    );
+    versenyBeallitas.pontok =
+    document
+        .getElementById("edzesPontok")
+        .value
+        .split(",")
+        .map(p => parseInt(p.trim()));
+           versenyzok = [];
+
+nevek.forEach(nev => {
+
+    versenyzok.push({
+
+        id: Date.now() + Math.random(),
+
+        qr: "",
+
+        ftiv: "",
+
+        nev: nev,
+
+        celok: []
+
+    });
+
+});
+
+aktualisVersenyzo = 0;
+
+document
+    .getElementById("edzesMod")
+    .style.display = "none";
+
+document
+    .getElementById("pontozoMod")
+    .style.display = "block";
+
+rajzol();
+
+        }
+    );
+}
+document
+    .getElementById("mentettEdzesekBtn")
+    .addEventListener(
+        "click",
+        () => {
+
+            document
+                .getElementById("fomenu")
+                .style.display = "none";
+
+            document
+                .getElementById("mentettEdzesekMod")
+                .style.display = "block";
+           let edzesek =
+    JSON.parse(
+        localStorage.getItem("edzesek") || "[]"
+    );
+
+let html = "";
+
+edzesek.forEach((e, index) => {
+
+   html += `
+
+    <div
+        class="mentettEdzes"
+        onclick="megnyitEdzes(${index})"
+    >
+
+        <b>${e.nev}</b><br>
+
+        ${e.datum}
+
+    </div>
+
+    <br>
+
+`;
+});
+document
+    .getElementById("mentettEdzesLista")
+    .innerHTML = html;     
+
+        }
+    );
+    document
+    .getElementById("visszaMentettEdzesekBtn")
+    .addEventListener(
+        "click",
+        () => {
+        
+         console.log("edzesReszletekMod");
+         console.log(document.getElementById("edzesReszletekMod"));
+
+         console.log("mentettEdzesekMod");
+         console.log(document.getElementById("mentettEdzesekMod"));
+            document
+                .getElementById("edzesReszletekMod")
+                .style.display = "none";
+
+            document
+                .getElementById("mentettEdzesekMod")
+                .style.display = "block";
+
+        }
+    );
+function edzesMentese() {
+
+    let edzesek =
+        JSON.parse(
+            localStorage.getItem("edzesek") || "[]"
+        );
+
+    edzesek.push({
+
+        nev:
+            document.getElementById("edzesNev").value,
+
+        datum:
+            new Date().toLocaleString(),
+
+        versenyzok:
+            versenyzok
+
+    });
+
+    localStorage.setItem(
+        "edzesek",
+        JSON.stringify(edzesek)
+    );
+
+    alert(
+        "Edzés elmentve!"
+    );
+
+}
+function megnyitEdzes(index) {
+    console.log(document.getElementById("mentettEdzesekMod"));
+    console.log(document.getElementById("edzesReszletekMod"));
+    console.log(document.getElementById("edzesReszletek"));
+
+    let edzesek =
+        JSON.parse(
+            localStorage.getItem("edzesek") || "[]"
+        );
+
+    let e = edzesek[index];
+console.log(e.versenyzok);
+
+    let szoveg = "";
+
+e.versenyzok.forEach(v => {
+
+    szoveg +=
+        v.nev +
+        " - " +
+        osszPont(v) +
+        " pont\n";
+
+});
+
+document
+    .getElementById("mentettEdzesekMod")
+    .style.display = "none";
+
+document
+    .getElementById("edzesReszletekMod")
+    .style.display = "block";
+console.log(szoveg);
+document
+    .getElementById("edzesReszletek")
+    .innerHTML =
+        "<h2>" + e.nev + "</h2>" +
+        "<p>" + e.datum + "</p>" +
+        "<pre>" + szoveg + "</pre>";
+
+}
+

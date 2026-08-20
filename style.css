@@ -6,6 +6,8 @@ body {
     max-width: 900px;
     margin-left: auto;
     margin-right: auto;
+
+    text-align: center;
 }
 
 h1 {
@@ -15,21 +17,46 @@ h1 {
 
 /* QR rész */
 
-#reader {
-    max-width: 350px;
-    margin: auto;
+#qrMod {
+    width: 450px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
-
-#lista {
-    margin-top: 15px;
-}
-
+#versenyNev,
 #inditBtn {
+    display: block;
+    width: 450px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+#reader {
+    width: 450px;
+    height: 450px;
+    overflow: hidden;
+    margin: 20px auto;
+}
+    #reader video {
+    width: 450px !important;
+    height: 460px !important;
+    object-fit: cover;
+}
+#lista {
     width: 100%;
-    height: 65px;
-    font-size: 22px;
+    text-align: center;
+}
+#inditBtn {
+    width: 450px;
+    height: 80px;
+    font-size: 28px;
     font-weight: bold;
-    margin-top: 15px;
+    margin-top: 20px;
+}
+
+#qrMod button {
+    align-self: center;
 }
 
 /* Célpont fejléc */
@@ -85,7 +112,21 @@ h1 {
     border: 4px solid black;
     background: #ffe5ee;
 }
+.valtoSor {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
 
+.valtoSor button {
+    font-size: 24px;
+    padding: 8px 16px;
+    cursor: pointer;
+}
+.valtoSor .versenyzoTab {
+    flex-shrink: 0;
+}
 /* Versenyző neve */
 
 .versenyzoNev {
@@ -341,4 +382,53 @@ th {
     font-weight: bold;
 
     margin-top: 20px;
+}
+#edzesMod {
+    max-width: 500px;
+    margin: auto;
+}
+
+#edzesMod input,
+#edzesMod select,
+#edzesMod textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 18px;
+}
+
+#edzesInditBtn {
+    width: 100%;
+    height: 70px;
+    font-size: 28px;
+    font-weight: bold;
+}
+.edzotarsNev {
+    width: 100%;
+    padding: 10px;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+#ujEdzotarsBtn {
+    width: 100%;
+    height: 60px;
+    font-size: 22px;
+}
+.edzotarsSor {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.edzotarsSor button {
+    width: 60px;
+    font-size: 24px;
+}
+
+.edzotarsNev {
+    flex: 1;
+}
+.kivalasztottPont {
+    background: #4caf50 !important;
+    color: white !important;
 }

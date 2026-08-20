@@ -1,35 +1,42 @@
 <!DOCTYPE html>
 <html lang="hu">
-
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
-
-<link rel="manifest" href="manifest.json">
-
-<title>FTIV Pontozó</title>
+    <title>FTIV Pontozó</title>
 
     <link rel="stylesheet" href="style.css">
 
-    <script src="https://unpkg.com/html5-qrcode" defer></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-    <script src="app.js" defer></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
+    <script src="app.js" defer></script>
 </head>
+
 
 <body>
 
-    <h1 id="versenyNev">Verseny betöltése...</h1>
+<div id="fomenu">
+    <h1>🏹 Golden Hawk Score</h1>
 
-    <!-- QR BEOLVASÓ MÓD -->
-    <div id="qrMod">
+    <button id="versenyModeBtn">
+        🏆 VERSENY
+    </button>
 
+    <button id="edzesModeBtn">
+        🏹 EDZÉS
+    </button>
+    <button id="mentettEdzesekBtn">
+    📚 MENTETT EDZÉSEK
+    </button>
+</div>
+    <h1 id="versenyNev" style="display:none;">
+        Verseny betöltése...
+    </h1>
+
+    <div id="qrMod" style="display:none;">
         <div id="reader"></div>
 
         <div id="lista"></div>
@@ -37,28 +44,114 @@
         <button id="inditBtn">
             Pontozás indítása
         </button>
+    </div>
+<div id="edzesMod" style="display:none;">
+
+    <h1>🏹 EDZÉS</h1>
+
+    <label>Edzés neve</label><br>
+    <input id="edzesNev" type="text"><br><br>
+
+    <label>Edzés típusa</label><br>
+    <select id="edzesTipus">
+        <option value="egyeni">Egyéni</option>
+        <option value="csoportos">Csoportos</option>
+    </select><br><br>
+
+    <label>Célok száma</label><br>
+    <input id="edzesCelok" type="number" value="12"><br><br>
+
+    <label>Lövések célonként</label><br>
+    <input id="edzesLovesek" type="number" value="3"><br><br>
+
+    <label>Találati értékek</label><br>
+
+<div id="pontValaszto">
+
+</div>
+
+<input
+    id="edzesPontok"
+    type="hidden"
+    value="10,8,5,0">
+
+<br><br>
+
+<div id="egyeniBlokk">
+
+    <label>Lövő neve</label><br>
+
+    <input
+        id="edzesLovoNev"
+        type="text">
+
+</div>
+
+<div id="csoportosBlokk"
+     style="display:none;">
+
+    <label>Edzőtársak</label>
+
+    <div id="edzotarsLista">
+
+    <div class="edzotarsSor">
+
+        <input
+            type="text"
+            class="edzotarsNev"
+            placeholder="Név">
+
+        <button type="button">🗑</button>
 
     </div>
 
-    <!-- PONTOZÓ MÓD -->
+</div>
+
+    <br>
+
+    <button id="ujEdzotarsBtn">
+        + Edzőtárs hozzáadása
+    </button>
+
+</div>
+
+    <button id="edzesInditBtn">
+        EDZÉS INDÍTÁSA
+    </button>
+
+</div>
+<div id="mentettEdzesekMod" style="display:none;">
+
+    <h1>📚 Mentett edzések</h1>
+
+    <div id="mentettEdzesLista"></div>
+
+</div>
+<div id="edzesReszletekMod" style="display:none;">
+
+    <h1>🏹 Edzés részletei</h1>
+
+    <div id="edzesReszletek"></div>
+
+    <button id="visszaMentettEdzesekBtn">
+        ⬅ Vissza
+    </button>
+
+</div>
     <div id="pontozoMod" style="display:none;">
-
         <div id="celNavigacio"></div>
-
         <div id="versenyzoTabok"></div>
-
         <div id="versenyzoPanel"></div>
-
         <div id="statisztika"></div>
-
         <div id="eredmenyTabla"></div>
-        <button id="lezarasBtn">
-    🏁 Verseny lezárása
-</button>
-<div id="qrEredmeny"></div>
 
+        <button id="lezarasBtn">
+            🏁 Verseny lezárása
+        </button>
+
+        <div id="qrEredmeny"></div>
     </div>
+</div>
 
 </body>
-
 </html>
