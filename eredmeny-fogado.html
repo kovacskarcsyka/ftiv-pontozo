@@ -51,27 +51,24 @@
 
 <div id="reader"></div>
 
-<input
-    type="file"
-    id="excelFile"
-    accept=".xlsx,.xls">
-
-<button id="exportBtn">
-    Excel export
+<button id="rangsorBtn">
+    🏆 Rangsor
 </button>
-
-<!button id="excelKitoltesBtn">
-    Excel letöltése
+<button id="rangsorExcelBtn">
+    📊 Rangsor Excel
 </button>
-
 <table id="tabla">
 
     <thead>
 
-        <tr>
-           <th>FTIV</th>
-           <th>Pont</th>
-        </tr>
+<tr>
+   <th>FTIV</th>
+   <th>Név</th>
+   <th>Nem</th>
+   <th>Korosztály</th>
+   <th>Kategória</th>
+   <th>Pont</th>
+</tr>
 
     </thead>
 
@@ -84,8 +81,19 @@
     let excelAdatok = [];
     let munkafuzet = null;
     let munkalapNev = "";
-
+    let marBeolvasottQr = [];
 function onScanSuccess(text) {
+
+    if (marBeolvasottQr.includes(text)) {
+
+        alert(
+            "Ez a csapat már be lett olvasva!"
+        );
+
+        return;
+    }
+
+    marBeolvasottQr.push(text);
 
     let sorok =
         text.split(";")
@@ -95,25 +103,62 @@ function onScanSuccess(text) {
         document.querySelector(
             "#tabla tbody"
         );
-
-    tbody.innerHTML = "";
-
     sorok.forEach(sor => {
 
-        let adatok =
-            sor.split("|");
+    let adatok =
+        sor.split("|");
 
-        let tr =
-            document.createElement("tr");
+    let ftiv =
+        adatok[0] || "";
 
-        tr.innerHTML = `
-            <td>${adatok[0] || ""}</td>
-            <td>${adatok[1] || ""}</td>
-`;
+    let nev =
+        ftiv;
+        let nem = "";
+        let korosztaly = "";
+        let kategoria = "";
 
-        tbody.appendChild(tr);
+
+     let versenyek =
+        JSON.parse(
+            localStorage.getItem("versenyek") || "[]"
+        );
+
+    versenyek.forEach(v => {
+
+        if (v.nevezok) {
+
+            v.nevezok.forEach(n => {
+
+               if (n.id == ftiv) {
+
+    nev = n.nev;
+    nem = n.nem;
+    korosztaly = n.korosztaly;
+    kategoria = n.kategoria;
+
+}
+
+            });
+
+        }
 
     });
+
+    let tr =
+        document.createElement("tr");
+
+   tr.innerHTML = `
+    <td>${ftiv}</td>
+    <td>${nev}</td>
+    <td>${nem}</td>
+    <td>${korosztaly}</td>
+    <td>${kategoria}</td>
+    <td>${adatok[1] || ""}</td>
+`;
+
+    tbody.appendChild(tr);
+
+});
 
 }
 
@@ -128,204 +173,254 @@ const scanner =
 
 scanner.render(onScanSuccess);
 document
-    .getElementById("excelFile")
-    .addEventListener(
-        "change",
-        excelBetoltes
-    );
-
-function excelBetoltes(e) {
-
-    let fajl =
-        e.target.files[0];
-
-    let reader =
-        new FileReader();
-
-    reader.onload = function(evt) {
-
-        let adatok =
-            new Uint8Array(evt.target.result);
-
-        munkafuzet =
-            XLSX.read(
-                adatok,
-                {
-                    type: "array"
-                }
-            );
-
-        munkalapNev =
-            munkafuzet.SheetNames[0];
-
-        let munkalap =
-            munkafuzet.Sheets[munkalapNev];
-
-        excelAdatok =
-            XLSX.utils.sheet_to_json(
-                munkalap
-            );
-
-        console.log(excelAdatok);
-
-    };
-
-    reader.readAsArrayBuffer(fajl);
-
-}
-document
-    .getElementById("exportBtn")
+    .getElementById("rangsorBtn")
     .addEventListener(
         "click",
-        exportalas
-    );
+        () => {
 
-function exportalas() {
+            let ablak =
+                window.open(
+                    "",
+                    "_blank"
+                );
 
-    let csv = "FTIV;Pont\n";
+           let html =
+    "<h1>Rangsor</h1>";
 
-    document
-        .querySelectorAll("#tabla tbody tr")
-        .forEach(tr => {
+let versenyzok = [];
 
-            let ftiv =
-                tr.children[0].innerText;
-
-            let pont =
-                tr.children[1].innerText;
-
-            csv +=
-                ftiv +
-                ";" +
-                pont +
-                "\n";
-
-        });
-
-    let blob =
-        new Blob(
-            [csv],
-            {
-                type:
-                "text/csv;charset=utf-8;"
-            }
-        );
-
-    let url =
-        URL.createObjectURL(blob);
-
-    let a =
-        document.createElement("a");
-
-    a.href = url;
-
-    a.download =
-        "pontok.csv";
-
-    a.click();
-
-}
 document
-    .getElementById("excelKitoltesBtn")
-    .addEventListener(
-        "click",
-        excelKitoltese
-    );
+    .querySelectorAll(
+        "#tabla tbody tr"
+    )
+    .forEach(tr => {
 
-function excelKitoltese() {
+        versenyzok.push({
 
-    if (!munkafuzet) {
+    nev:
+        tr.children[1].innerText,
 
-        alert("Először tölts be egy Excel fájlt!");
-        return;
+    nem:
+        tr.children[2].innerText,
+
+    korosztaly:
+        tr.children[3].innerText,
+
+    kategoria:
+        tr.children[4].innerText,
+
+    pont:
+        Number(
+            tr.children[5].innerText
+        )
+
+});
+
+    });
+
+let csoportok = {};
+
+versenyzok.forEach(v => {
+
+    let kulcs =
+        v.nem +
+        " | " +
+        v.korosztaly +
+        " | " +
+        v.kategoria;
+
+    if (!csoportok[kulcs]) {
+
+        csoportok[kulcs] = [];
 
     }
 
-    let munkalap =
-        munkafuzet.Sheets[munkalapNev];
+    csoportok[kulcs].push(v);
 
-    let tartomany =
-        XLSX.utils.decode_range(
-            munkalap["!ref"]
-        );
+});
 
+Object.keys(csoportok)
+    .forEach(kulcs => {
+
+        html +=
+            "<h2>" +
+            kulcs +
+            "</h2>";
+
+        csoportok[kulcs]
+            .sort(
+                (a, b) =>
+                    b.pont - a.pont
+            );
+
+        csoportok[kulcs]
+            .forEach(
+                (v, index) => {
+
+                   let hely = "";
+
+if (index === 0)
+    hely = "🥇 ";
+
+else if (index === 1)
+    hely = "🥈 ";
+
+else if (index === 2)
+    hely = "🥉 ";
+
+if (index === 0) {
+
+    html +=
+        "<table border='1' style='border-collapse:collapse;margin-bottom:20px;width:100%;'>" +
+        "<tr>" +
+        "<th>Hely</th>" +
+        "<th>Név</th>" +
+        "<th>Pont</th>" +
+        "</tr>";
+
+}
+
+html +=
+    "<tr>" +
+    "<td>" + hely + (index + 1) + ".</td>" +
+    "<td>" + v.nev + "</td>" +
+    "<td>" + v.pont + "</td>" +
+    "</tr>";
+
+if (index === csoportok[kulcs].length - 1) {
+
+    html += "</table>";
+
+}
+
+                }
+            );
+
+    });
+
+ablak.document.write(html);
+
+        }
+    );
     document
-        .querySelectorAll("#tabla tbody tr")
-        .forEach(tr => {
+    .getElementById("rangsorExcelBtn")
+    .addEventListener(
+        "click",
+        () => {
 
-            let ftiv =
-                tr.children[0].innerText.trim();
+            let versenyzok = [];
 
-            let pont =
-                tr.children[1].innerText.trim();
+            document
+                .querySelectorAll(
+                    "#tabla tbody tr"
+                )
+                .forEach(tr => {
 
-            for (
-                let r = tartomany.s.r;
-                r <= tartomany.e.r;
-                r++
-            ) {
+                    versenyzok.push({
 
-                let qrCella =
-                    XLSX.utils.encode_cell({
-                        r: r,
-                        c: 8
+                        FTIV:
+                            tr.children[0].innerText,
+
+                        Nev:
+                            tr.children[1].innerText,
+
+                        Nem:
+                            tr.children[2].innerText,
+
+                        Korosztaly:
+                            tr.children[3].innerText,
+
+                        Kategoria:
+                            tr.children[4].innerText,
+
+                        Pont:
+                            Number(
+                                tr.children[5].innerText
+                            )
+
                     });
 
-                let qrErtek =
-    munkalap[qrCella]
-        ? String(
-            munkalap[qrCella].v
-          ).trim()
-        : "";
+                });
 
-console.log(
-    qrCella,
-    "=>",
-    qrErtek,
-    "KERES:",
-    ftiv
-);
+            let csoportok = {};
 
-if (qrErtek === ftiv) {
+            versenyzok.forEach(v => {
 
-                    let pontCella =
-                        XLSX.utils.encode_cell({
-                            r: r,
-                            c: 7
-                        });
+                let kulcs =
+                    v.Nem +
+                    " | " +
+                    v.Korosztaly +
+                    " | " +
+                    v.Kategoria;
 
-                    munkalap[pontCella] = {
-                        t: "n",
-                        v: Number(pont)
-                    };
+                if (!csoportok[kulcs]) {
 
-                    console.log(
-                        "Találat:",
-                        ftiv,
-                        "->",
-                        pontCella,
-                        "=",
-                        pont
-                    );
-
-                    break;
+                    csoportok[kulcs] = [];
 
                 }
 
-            }
+                csoportok[kulcs].push(v);
 
-        });
+            });
 
-    XLSX.writeFile(
-        munkafuzet,
-        "eredmenyek_kitoltve.xlsx"
+            let wb =
+                XLSX.utils.book_new();
+
+            Object.keys(csoportok)
+                .forEach(kulcs => {
+
+                    let lista =
+                        csoportok[kulcs];
+
+                    lista.sort(
+                        (a, b) =>
+                            b.Pont - a.Pont
+                    );
+
+                    let excelAdatok =
+                        lista.map(
+                            (v, index) => ({
+
+                                Hely:
+                                    index + 1,
+
+                                FTIV:
+                                    v.FTIV,
+
+                                Nev:
+                                    v.Nev,
+
+                                Pont:
+                                    v.Pont
+
+                            })
+                        );
+
+                    let ws =
+                        XLSX.utils.json_to_sheet(
+                            excelAdatok
+                        );
+
+                    let lapNev =
+                        kulcs
+                            .replace(/[\\\/:*?"<>|]/g, "")
+                            .substring(0, 31);
+
+                    XLSX.utils.book_append_sheet(
+                        wb,
+                        ws,
+                        lapNev
+                    );
+
+                });
+
+            XLSX.writeFile(
+                wb,
+                "Rangsor.xlsx"
+            );
+
+        }
     );
-
-    alert(
-        "Excel kitöltve!"
-    );
-
-}
 </script>
 
 </body>

@@ -17,20 +17,37 @@
 
 
 <body>
+    <img
+    id="hatterLogo"
+    src="logo.png"
+>
 
 <div id="fomenu">
-    <h1>🏹 Golden Hawk Score</h1>
+    <h1 id="foCim">
+    🏹<br>
+    Golden Hawk Score
+</h1>
 
-    <button id="versenyModeBtn">
+     <button id="versenyModeBtn">
         🏆 VERSENY
-    </button>
+     </button>
 
-    <button id="edzesModeBtn">
+     <button id="edzesModeBtn">
         🏹 EDZÉS
-    </button>
-    <button id="mentettEdzesekBtn">
+     </button>
+     <button id="mentettEdzesekBtn">
     📚 MENTETT EDZÉSEK
-    </button>
+     </button>
+     <button id="versenyekBtn">
+    📝 VERSENYEK
+     </button>
+     <button
+    id="ujVersenyBtn"
+    style="display:none;"
+>
+    🔐 ADMIN
+</button>
+
 </div>
     <h1 id="versenyNev" style="display:none;">
         Verseny betöltése...
@@ -127,7 +144,7 @@
     <div id="mentettEdzesLista"></div>
 
 </div>
-<div id="edzesReszletekMod" style="display:none;">
+    <div id="edzesReszletekMod" style="display:none;">
 
     <h1>🏹 Edzés részletei</h1>
 
@@ -136,7 +153,141 @@
     <button id="visszaMentettEdzesekBtn">
         ⬅ Vissza
     </button>
+    </div>
+    <div id="versenyekMod" style="display:none;">
 
+    <h1>📋 Versenyek</h1>
+
+    <div id="versenyLista"></div>
+    </div>
+
+<div id="versenyAdatlapMod" style="display:none;">
+
+    <h1 id="versenyAdatlapNev"></h1>
+
+    <div id="versenyAdatlapLeiras"></div>
+
+<h3 id="nevezokCim">📋 Nevezők</h3>
+
+<div class="nevezoFejlec">
+
+    <div>Név</div>
+
+    <div>Nem</div>
+
+    <div>Korosztály</div>
+
+    <div>Kategória</div>
+
+    <div>Egyesület</div>
+
+</div>
+
+<div id="nevezokLista"></div>
+
+
+<button id="nevezekBtn">
+    📝 NEVEZEK
+</button>
+<div id="nevezesiUrlap" style="display:none;">
+
+    <br>
+
+    <label>Név</label><br>
+    <input id="nevezoNev" type="text"><br><br>
+
+    <label>Nem</label><br>
+    <select id="nevezoNem">
+        <option>Férfi</option>
+        <option>Nő</option>
+    </select><br><br>
+
+    <label>Korosztály</label><br>
+    <select id="nevezoKorosztaly"></select>
+    </select><br><br>
+
+    <label>Kategória</label><br>
+    <select id="nevezoKategoria"></select>
+    </select><br><br>
+
+    <label>Egyesület</label><br>
+    <input id="nevezoEgyesulet" type="text"><br><br>
+
+    <button id="nevezesKuldesBtn">
+        ✅ Nevezés elküldése
+    </button>
+</div>
+
+</div>
+<div id="ujVersenyMod" style="display:none;">
+
+    <h1>🏢 Versenyiroda</h1>
+
+<button id="adminUjVersenyBtn">
+    ➕ Új verseny
+</button>
+<button id="adminVersenyekBtn">
+    📋 Versenyek kezelése
+</button>
+<br><br>
+<div
+    id="adminVersenyLista"
+    style="display:none;">
+</div>
+<br><br>
+</div>
+<div id="ujVersenyOldal" style="display:none;">
+
+    <h1>➕ Új verseny</h1>
+
+    <button id="visszaAdminBtn">
+        ⬅ Vissza
+    </button>
+
+    <br><br>
+    <label>Verseny neve</label><br>
+    <input id="ujVersenyNev" type="text"><br><br>
+
+    <label>Versenykiírás</label><br>
+    <textarea
+    id="ujVersenyLeiras"
+    rows="20"
+    style="
+        width:700px;
+        max-width:95%;
+    ">
+</textarea>
+<br>
+    <label>Korosztályok</label><br>
+    <input
+        id="ujVersenyKorosztalyok"
+        type="text"
+        placeholder="Gyerek,Ifjúsági,Felnőtt,Veterán">
+    <br><br>
+
+    <label>Kategóriák</label><br>
+    <input
+        id="ujVersenyKategoriak"
+        type="text"
+        placeholder="Vadászreflex,Barebow,Csigás">
+    <br><br>
+
+    <button id="versenyMentesBtn">
+        💾 Verseny mentése
+    </button>
+    </div>
+    <div id="adminVersenyOldal" style="display:none;">
+
+    <button id="visszaVersenyirodaBtn">
+        ⬅ Vissza
+    </button>
+
+    <h1 id="adminVersenyNev"></h1>
+
+    <div id="adminVersenyAdatok"></div>
+    <div id="csapatBeosztas" style="display:flex; gap:20px;">
+</div>
+</div>
 </div>
     <div id="pontozoMod" style="display:none;">
         <div id="celNavigacio"></div>
@@ -144,10 +295,17 @@
         <div id="versenyzoPanel"></div>
         <div id="statisztika"></div>
         <div id="eredmenyTabla"></div>
+        <div class="pontozoGombSor">
 
-        <button id="lezarasBtn">
-            🏁 Verseny lezárása
-        </button>
+    <button id="kilepesBtn">
+        🚪 Kilépés
+    </button>
+
+    <button id="lezarasBtn">
+        🏁 Lezárás
+    </button>
+
+</div>
 
         <div id="qrEredmeny"></div>
     </div>

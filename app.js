@@ -5,7 +5,33 @@ let aktualisCel = 0;
 let aktualisVersenyzo = 0;
 let aktualisMod = "verseny";
 let versenyzok = [];
+let adminKoppintas = 0;
+const ADMIN_JELSZO = "11MaCika11";
+const tesztVerseny = {
 
+    nev: "Golden Hawk Cup 2026",
+
+    leiras: `
+        <p>Teszt versenykiírás.</p>
+        <p>Helyszín: Füzesgyarmat</p>
+        <p>Dátum: 2026.09.12.</p>
+    `,
+
+    korosztalyok: [
+        "Gyerek",
+        "Ifjúsági",
+        "Felnőtt",
+        "Veterán"
+    ],
+
+    kategoriak: [
+        "Vadászreflex",
+        "Barebow",
+        "Csigás",
+        "Longbow"
+    ]
+
+};
 async function versenyBetoltese() {
 
     const response = await fetch("verseny.json");
@@ -19,6 +45,13 @@ async function versenyBetoltese() {
 }
 
 function nevKinyeres(szoveg) {
+
+    if (szoveg.includes("Nev:")) {
+
+        return szoveg
+            .split("Nev:")[1]
+            .trim();
+    }
 
     const sorok = szoveg.split("\n");
 
@@ -41,9 +74,92 @@ function pontErtekek() {
     return versenyBeallitas.pontok;
 
 }
+function osszesQrNyomtatas() {
 
+    console.log(aktualisVerseny);
+
+    let ablak = window.open("", "_blank");
+
+    let html = `
+    <html>
+    <head>
+        <title>QR Nyomtatás</title>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    </head>
+    <body>
+`;
+
+    aktualisVerseny.nevezok.forEach(n => {
+
+        html += `
+    <div style="
+        border:1px solid black;
+        padding:10px;
+        margin:10px;
+        display:inline-block;
+        width:300px;
+        text-align:center;
+    ">
+        <h2>${n.nev}</h2>
+
+        <div id="qr_${n.id}"></div>
+
+        <p>
+${n.id}<br>
+${n.nev}<br>
+${n.nem}<br>
+${n.korosztaly}<br>
+${n.kategoria}<br>
+${n.egyesulet}
+</p>
+    </div>
+`;
+
+    });
+
+   html += `
+
+<script>
+
+window.onload = function() {
+
+`;
+
+aktualisVerseny.nevezok.forEach(n => {
+
+    html += `
+console.log("QR:", "FTIV: ${n.id}");
+
+    new QRCode(
+        document.getElementById("qr_${n.id}"),
+        {
+     text: "${n.id}",
+        }
+    );
+
+    `;
+
+});
+
+html += `
+
+};
+
+</script>
+
+</body>
+</html>
+
+`;
+
+    ablak.document.write(html);
+    ablak.document.close();
+
+}
 function onScanSuccess(decodedText) {
-
+console.log(decodedText);
     let marVan =
         versenyzok.find(
             v => v.qr === decodedText
@@ -53,18 +169,42 @@ function onScanSuccess(decodedText) {
         return;
     }
 
-    versenyzok.push({
+  let nev = decodedText;
+let ftiv = decodedText;
+
+let versenyek =
+    JSON.parse(
+        localStorage.getItem("versenyek") || "[]"
+    );
+
+versenyek.forEach(v => {
+
+    if (v.nevezok) {
+
+        v.nevezok.forEach(n => {
+
+            if (n.id == decodedText) {
+
+                nev = n.nev;
+                ftiv = n.id;
+
+            }
+
+        });
+
+    }
+
+});
+
+versenyzok.push({
 
     id: Date.now() + Math.random(),
 
     qr: decodedText,
 
-    ftiv: mezoKinyeres(
-        decodedText,
-        "FTIV"
-    ),
+    ftiv: ftiv,
 
-    nev: nevKinyeres(decodedText),
+    nev: nev,
 
     celok: []
 
@@ -143,7 +283,17 @@ function pontHozzaadas(pont) {
 
     lovesek.push(pont);
 
-    rajzol();
+localStorage.setItem(
+    "folyamatbanLevoPontozas",
+    JSON.stringify({
+        aktualisCel,
+        aktualisVersenyzo,
+        aktualisMod,
+        versenyzok
+    })
+);
+
+rajzol();
 }
 
 function lovesVisszavonas() {
@@ -392,6 +542,9 @@ function versenyLezarasa() {
 
     versenyLezarva = true;
 
+    localStorage.removeItem(
+    "folyamatbanLevoPontozas"
+);
 if (aktualisMod == "verseny") {
 
     alert(
@@ -761,7 +914,69 @@ document.getElementById("eredmenyTabla").innerHTML = tabla;
 }
 
 window.onload = async function () {
+   
+    document
+    .getElementById("ujVersenyLeiras")
+    .addEventListener(
+        "input",
+        function () {
+
+            this.style.height = "auto";
+
+            this.style.height =
+                this.scrollHeight + "px";
+
+        }
+    );
    await versenyBetoltese();
+
+    const mentettPontozas =
+    localStorage.getItem(
+        "folyamatbanLevoPontozas"
+    );
+
+if (mentettPontozas) {
+
+    if (
+        confirm(
+            "Találtam egy félbehagyott pontozást. Folytatod?"
+        )
+    ) {
+
+        const adat =
+            JSON.parse(
+                mentettPontozas
+            );
+
+        aktualisCel =
+            adat.aktualisCel;
+
+        aktualisVersenyzo =
+            adat.aktualisVersenyzo;
+
+        aktualisMod =
+            adat.aktualisMod;
+
+        versenyzok =
+            adat.versenyzok;
+
+        document
+            .getElementById("fomenu")
+            .style.display =
+                "none";
+
+        document
+            .getElementById("pontozoMod")
+            .style.display =
+                "block";
+
+        rajzol();
+
+       // return;
+
+    }
+
+}
    const pontValaszto =
     document.getElementById("pontValaszto");
 
@@ -813,7 +1028,33 @@ document
         "click",
         pontozasInditas
     );
-   // qrScanner.render(onScanSuccess);
+   document
+    .getElementById("foCim")
+    .addEventListener(
+        "click",
+        () => {
+
+            adminKoppintas++;
+
+            if (adminKoppintas >= 5) {
+
+                const adminGomb =
+                    document.getElementById(
+                        "ujVersenyBtn"
+                    );
+
+                adminGomb.style.display =
+    adminGomb.style.display === "none"
+    ? ""
+    : "none";
+
+
+                adminKoppintas = 0;
+
+            }
+
+        }
+    );
 document
     .getElementById("versenyModeBtn")
     .addEventListener("click", () => {
@@ -877,11 +1118,273 @@ document
 
         }
     );
+    document
+    .getElementById("nevezekBtn")
+    .addEventListener(
+        "click",
+        () => {
+
+            document
+                .getElementById("nevezesiUrlap")
+                .style.display = "block";
+
+        }
+    );
+
+document
+    .getElementById("adminUjVersenyBtn")
+    .addEventListener(
+        "click",
+        () => {
+
+            document
+                .getElementById("ujVersenyMod")
+                .style.display = "none";
+
+            document
+                .getElementById("ujVersenyOldal")
+                .style.display = "block";
+
+        }
+    );
+    document
+    .getElementById("visszaAdminBtn")
+    .addEventListener(
+        "click",
+        () => {
+
+            document
+                .getElementById("ujVersenyOldal")
+                .style.display = "none";
+
+            document
+                .getElementById("ujVersenyMod")
+                .style.display = "block";
+
+        }
+    );
+    document
+    .getElementById("adminVersenyekBtn")
+    .addEventListener(
+        "click",
+        () => {
+
+            document
+                .getElementById("adminVersenyLista")
+                .style.display = "block";
+
+            let versenyek =
+                JSON.parse(
+                    localStorage.getItem("versenyek") || "[]"
+                );
+
+            let html = "";
+            versenyek.forEach((v, index) => {
+
+               html += `
+
+    <div
+        class="versenyElem"
+        onclick="adminVersenyMegnyit(${index})"
+    >
+
+        🏹 ${v.nev}
+
+        <br>
+
+        👥 ${v.nevezok ? v.nevezok.length : 0} nevező
+
+    </div>
+
+`;
+
+            });
+
+            document
+                .getElementById("adminVersenyLista")
+                .innerHTML = html;
+
+        }
+    );
+    document
+    .getElementById("nevezesKuldesBtn")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (!aktualisVerseny) return;
+
+            if (!aktualisVerseny.nevezok) {
+
+                aktualisVerseny.nevezok = [];
+
+            }
+let ujId = "FTIV-" +
+    String(
+        (Number(localStorage.getItem("utolsoFTIV")) || 0) + 1
+    ).padStart(4, "0");
+
+localStorage.setItem(
+    "utolsoFTIV",
+    String(
+        (Number(localStorage.getItem("utolsoFTIV")) || 0) + 1
+    )
+);
+           aktualisVerseny.nevezok.push({
+
+    id: ujId,
+
+    nev:
+        document
+            .getElementById("nevezoNev")
+            .value,
+
+    nem:
+        document
+            .getElementById("nevezoNem")
+            .value,
+
+    korosztaly:
+        document
+            .getElementById("nevezoKorosztaly")
+            .value,
+
+    kategoria:
+        document
+            .getElementById("nevezoKategoria")
+            .value,
+
+    egyesulet:
+        document
+            .getElementById("nevezoEgyesulet")
+            .value
+
+});
+            let versenyek =
+    JSON.parse(
+        localStorage.getItem("versenyek") || "[]"
+    );
+
+let index =
+    versenyek.findIndex(
+        v => v.nev === aktualisVerseny.nev
+    );
+
+if (index >= 0) {
+
+    versenyek[index] =
+        aktualisVerseny;
+
+    localStorage.setItem(
+        "versenyek",
+        JSON.stringify(versenyek)
+    );
+
+}
+
+            alert(
+                "Nevezés rögzítve!"
+            );
+
+        }
+    );
+    document
+
+    .getElementById("versenyekBtn")
+    .addEventListener(
+        "click",
+        () => {
+
+            document
+                .getElementById("fomenu")
+                .style.display = "none";
+
+            document
+    .getElementById("versenyekMod")
+    .style.display = "block";
+
+let versenyek =
+    JSON.parse(
+        localStorage.getItem("versenyek") || "[]"
+    );
+
+let html = "";
+
+versenyek.forEach((v, index) => {
+
+    html += `
+
+        <div
+            class="versenyElem"
+            onclick="megnyitVerseny(${index})"
+        >
+
+            🏹 ${v.nev}
+
+        </div>
+
+    `;
+
+});
+
+document
+    .getElementById("versenyLista")
+    .innerHTML = html;
+
+        }
+    );
+    document
+    .getElementById("ujVersenyBtn")
+    .addEventListener(
+        "click",
+        () => {
+const jelszo =
+    prompt("Admin jelszó:");
+
+if (jelszo !== ADMIN_JELSZO) {
+
+    alert("Hibás jelszó!");
+
+    return;
+
+}
+            document
+                .getElementById("fomenu")
+                .style.display = "none";
+
+            document
+                .getElementById("ujVersenyMod")
+                .style.display = "block";
+
+        }
+    );
 document
     .getElementById("lezarasBtn")
     .addEventListener(
         "click",
         versenyLezarasa
+    );
+    document
+    .getElementById("kilepesBtn")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (
+                !confirm(
+                    "Ha most kilépsz, a folyamatban lévő verseny vagy edzés nem lesz elmentve.\n\nBiztosan kilépsz?"
+                )
+            ) {
+                return;
+            }
+
+            localStorage.removeItem(
+                "folyamatbanLevoPontozas"
+            );
+
+            location.reload();
+
+        }
     );
 document
     .getElementById("edzesTipus")
@@ -897,8 +1400,57 @@ document
                     : "none";
         }
     );
-
 document
+    .getElementById("versenyMentesBtn")
+    .addEventListener(
+        "click",
+        () => {
+
+            let versenyek =
+                JSON.parse(
+                    localStorage.getItem("versenyek") || "[]"
+                );
+
+            versenyek.push({
+
+    nev:
+        document
+            .getElementById("ujVersenyNev")
+            .value,
+
+    leiras:
+        document
+            .getElementById("ujVersenyLeiras")
+            .value,
+
+    korosztalyok:
+        document
+            .getElementById("ujVersenyKorosztalyok")
+            .value
+            .split(","),
+
+    kategoriak:
+        document
+            .getElementById("ujVersenyKategoriak")
+            .value
+            .split(",")
+
+});
+
+            localStorage.setItem(
+                "versenyek",
+                JSON.stringify(versenyek)
+            );
+
+            alert(
+                "Verseny elmentve!"
+            );
+
+        }
+    );
+
+
+                    const nev =document
     .getElementById("ujEdzotarsBtn")
     .addEventListener(
         "click",
@@ -960,6 +1512,7 @@ if ("serviceWorker" in navigator) {
             );
 
         });
+}
 document
     .getElementById("edzesInditBtn")
     .addEventListener(
@@ -989,17 +1542,19 @@ else if (
 }
 
             document
-                .querySelectorAll(".edzotarsNev")
-                .forEach(elem => {
+    .querySelectorAll(".edzotarsNev")
+    .forEach(elem => {
 
-                    const nev =
-                        elem.value.trim();
+        const nev =
+            elem.value.trim();
 
-                    if (nev !== "") {
-                        nevek.push(nev);
-                    }
+        if (nev !== "") {
 
-                });
+            nevek.push(nev);
+
+        }
+
+    });
 
             document
                 .getElementById("edzesMod")
@@ -1042,7 +1597,6 @@ nevek.forEach(nev => {
     });
 
 });
-
 aktualisVersenyzo = 0;
 
 document
@@ -1057,7 +1611,7 @@ rajzol();
 
         }
     );
-}
+
 document
     .getElementById("mentettEdzesekBtn")
     .addEventListener(
@@ -1071,128 +1625,195 @@ document
             document
                 .getElementById("mentettEdzesekMod")
                 .style.display = "block";
-           let edzesek =
-    JSON.parse(
-        localStorage.getItem("edzesek") || "[]"
+
+            let edzesek =
+                JSON.parse(
+                    localStorage.getItem("edzesek") || "[]"
+                );
+
+            let html = "";
+
+            edzesek.forEach((e, index) => {
+
+                html += `
+
+                    <div
+                        class="mentettEdzes"
+                        onclick="megnyitEdzes(${index})"
+                    >
+
+                        <b>${e.nev}</b><br>
+
+                        ${e.datum}
+
+                    </div>
+
+                    <br>
+
+                `;
+
+            });
+
+            document
+                .getElementById("mentettEdzesLista")
+                .innerHTML = html;
+
+        }
     );
+  function megnyitVerseny(index) {
 
-let html = "";
+    let versenyek =
+        JSON.parse(
+            localStorage.getItem("versenyek") || "[]"
+        );
 
-edzesek.forEach((e, index) => {
+    let verseny =
+        versenyek[index];
 
-   html += `
+    aktualisVerseny = verseny;
 
-    <div
-        class="mentettEdzes"
-        onclick="megnyitEdzes(${index})"
-    >
+    document
+        .getElementById("versenyekMod")
+        .style.display = "none";
 
-        <b>${e.nev}</b><br>
+    document
+        .getElementById("versenyAdatlapMod")
+        .style.display = "block";
 
-        ${e.datum}
+    document
+        .getElementById("versenyAdatlapNev")
+        .innerText =
+            "🏹 " + verseny.nev;
+
+    document
+        .getElementById("versenyAdatlapLeiras")
+        .innerHTML =
+            verseny.leiras;
+            let korHtml = "";
+
+verseny.korosztalyok.forEach(k => {
+
+    korHtml +=
+        `<option>${k.trim()}</option>`;
+
+});
+
+document
+    .getElementById("nevezoKorosztaly")
+    .innerHTML =
+        korHtml;
+
+let katHtml = "";
+
+verseny.kategoriak.forEach(k => {
+
+    katHtml +=
+        `<option>${k.trim()}</option>`;
+
+});
+
+document
+    .getElementById("nevezoKategoria")
+    .innerHTML =
+        katHtml;
+
+
+}
+function adminVersenyMegnyit(index) {
+
+    let versenyek =
+        JSON.parse(
+            localStorage.getItem("versenyek") || "[]"
+        );
+
+    let verseny =
+        versenyek[index];
+
+    window.aktualisVerseny =
+        verseny;
+
+    document
+        .getElementById("ujVersenyMod")
+        .style.display = "none";
+
+    document
+        .getElementById("adminVersenyOldal")
+        .style.display = "block";
+
+    document
+        .getElementById("adminVersenyNev")
+        .innerText =
+            "🏹 " + verseny.nev;
+
+   let html = `
+
+<div class="versenyFejlec">
+
+    <div class="versenyInfo">
+
+        👥 Nevezők:
+        ${verseny.nevezok ? verseny.nevezok.length : 0}
 
     </div>
 
-    <br>
+    <button
+        onclick="osszesQrNyomtatas()"
+    >
+        🏷 Összes QR nyomtatása
+    </button>
+
+    <button
+        onclick="csapatBeosztasMegnyit()"
+    >
+        🏹 Csapatbeosztás
+    </button>
+
+</div>
 
 `;
-});
-document
-    .getElementById("mentettEdzesLista")
-    .innerHTML = html;     
 
-        }
-    );
+    if (verseny.nevezok) {
+
+        verseny.nevezok.forEach(n => {
+
+            html += `
+
+                <div class="nevezoSor">
+
+                    <div>${n.nev}</div>
+
+                    <div>${n.nem}</div>
+
+                    <div>${n.korosztaly}</div>
+
+                    <div>${n.kategoria}</div>
+
+                    <div>${n.egyesulet}</div>
+
+                </div>
+
+            `;
+
+        });
+
+    }
+
     document
-    .getElementById("visszaMentettEdzesekBtn")
-    .addEventListener(
-        "click",
-        () => {
-        
-         console.log("edzesReszletekMod");
-         console.log(document.getElementById("edzesReszletekMod"));
+        .getElementById("adminVersenyAdatok")
+        .innerHTML =
+            html;
 
-         console.log("mentettEdzesekMod");
-         console.log(document.getElementById("mentettEdzesekMod"));
-            document
-                .getElementById("edzesReszletekMod")
-                .style.display = "none";
-
-            document
-                .getElementById("mentettEdzesekMod")
-                .style.display = "block";
-
-        }
-    );
-function edzesMentese() {
-
-    let edzesek =
-        JSON.parse(
-            localStorage.getItem("edzesek") || "[]"
-        );
-
-    edzesek.push({
-
-        nev:
-            document.getElementById("edzesNev").value,
-
-        datum:
-            new Date().toLocaleString(),
-
-        versenyzok:
-            versenyzok
-
-    });
+}
+    function csapatBeosztasMegnyit() {
 
     localStorage.setItem(
-        "edzesek",
-        JSON.stringify(edzesek)
+        "aktualisCsapatVerseny",
+        JSON.stringify(window.aktualisVerseny)
     );
 
-    alert(
-        "Edzés elmentve!"
+    window.open(
+        "csapatbeosztas.html",
+        "_blank"
     );
 
 }
-function megnyitEdzes(index) {
-    console.log(document.getElementById("mentettEdzesekMod"));
-    console.log(document.getElementById("edzesReszletekMod"));
-    console.log(document.getElementById("edzesReszletek"));
-
-    let edzesek =
-        JSON.parse(
-            localStorage.getItem("edzesek") || "[]"
-        );
-
-    let e = edzesek[index];
-console.log(e.versenyzok);
-
-    let szoveg = "";
-
-e.versenyzok.forEach(v => {
-
-    szoveg +=
-        v.nev +
-        " - " +
-        osszPont(v) +
-        " pont\n";
-
-});
-
-document
-    .getElementById("mentettEdzesekMod")
-    .style.display = "none";
-
-document
-    .getElementById("edzesReszletekMod")
-    .style.display = "block";
-console.log(szoveg);
-document
-    .getElementById("edzesReszletek")
-    .innerHTML =
-        "<h2>" + e.nev + "</h2>" +
-        "<p>" + e.datum + "</p>" +
-        "<pre>" + szoveg + "</pre>";
-
-}
-

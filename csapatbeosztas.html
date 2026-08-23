@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+
+<meta charset="UTF-8">
+
+<title>Csapatbeosztás</title>
+
+<style>
+
+body{
+    font-family: Arial;
+    margin:20px;
+}
+
+.fejlec{
+    margin-bottom:20px;
+}
+
+.kontener{
+    display:flex;
+    gap:20px;
+}
+
+.oldal{
+    border:1px solid #ccc;
+    padding:10px;
+    border-radius:8px;
+    text-align:center;
+}
+#csapatokOldal{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:10px;
+}
+#nevezokOldal{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:10px;
+}
+.csapatTag{
+    display:flex;
+    text-align:left;
+    margin:3px 0;
+    padding:2px 4px;
+    border-radius:4px;
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="fejlec">
+
+    <h1 id="versenyNev">
+        Csapatbeosztás
+    </h1>
+
+</div>
+
+<div class="kontener">
+
+    <div class="oldal">
+
+       <h2>🏹 Csapatok</h2>
+
+        <button id="ujCsapatBtn">
+            ➕ Új csapat
+        </button>
+
+        <div id="csapatokOldal"></div>
+
+    </div>
+
+    <div class="oldal">
+
+        <h2>👥 Nevezők</h2>
+
+        <div id="nevezokOldal"></div>
+
+    </div>
+
+</div>
+
+<script>
+
+const verseny =
+    JSON.parse(
+        localStorage.getItem(
+            "aktualisCsapatVerseny"
+        )
+    );
+
+document
+    .getElementById("versenyNev")
+    .innerText =
+        "🏹 " + verseny.nev;
+
+console.log(verseny);
+let nevezokHtml = "";
+verseny.nevezok.sort((a, b) =>
+    a.nev.localeCompare(
+        b.nev,
+        "hu"
+    )
+);
+
+verseny.nevezok.forEach(nevezo => {
+
+    nevezokHtml += `
+    <div
+        class="huzhatoNevezo"
+        draggable="true"
+        data-id="${nevezo.id}"
+        style="
+            border:1px solid #ccc;
+            padding:6px;
+            margin:4px;
+            border-radius:6px;
+            cursor:grab;
+        "
+    >
+
+        <input
+            type="checkbox"
+            class="jelenletiPipa"
+            data-id="${nevezo.id}"
+        >
+
+        ${nevezo.nev}
+
+    </div>
+`;
+
+});
+
+document
+    .getElementById("nevezokOldal")
+    .innerHTML += nevezokHtml;
+    let csapatDb = 0;
+    let csapatBeosztas = {};
+    let jelenlevok = {};
+    const mentett =
+    localStorage.getItem(
+        "csapatBeosztas_" + verseny.nev
+    );
+const mentettJelenlet =
+    JSON.parse(
+        localStorage.getItem(
+            "jelenlevok_" + verseny.nev
+        ) || "{}"
+    );
+
+jelenlevok = mentettJelenlet;
+if (mentett) {
+
+    document.getElementById(
+        "csapatokOldal"
+    ).innerHTML = mentett;
+
+}
+console.log(
+    document.querySelectorAll(".torlesBtn").length
+);
+document
+    .querySelectorAll(".torlesBtn")
+    .forEach(gomb => {
+
+        gomb.onclick = function() {
+
+            const id =
+                this.dataset.id;
+
+            this.parentElement.remove();
+
+            const sor =
+                document.querySelector(
+                    '.huzhatoNevezo[data-id="' +
+                    id +
+                    '"]'
+                );
+
+            if (sor) {
+
+                const csapatInfo =
+                    sor.querySelector(
+                        ".csapatInfo"
+                    );
+
+                if (csapatInfo) {
+
+                    csapatInfo.remove();
+
+                }
+
+            }
+
+            frissitCsapatFejlecek();
+            mentes();
+
+        };
+
+    });
+csapatDb =
+    document.querySelectorAll(
+        ".csapatDoboz"
+    ).length;
+document
+    .querySelectorAll(".csapatDoboz")
+    .forEach(csapat => {
+
+        if (
+            csapat.querySelectorAll(
+                ".csapatTag"
+            ).length === 0
+        ) {
+
+            csapat.remove();
+
+        }
+
+    });
+
+
+ Object.keys(jelenlevok).forEach(id => {
+
+    if (!jelenlevok[id]) return;
+
+    const pipa =
+        document.querySelector(
+            '.jelenletiPipa[data-id="' +
+            id +
+            '"]'
+        );
+
+    if (pipa) {
+
+        pipa.checked = true;
+
+        const sor =
+            pipa.closest(
+                ".huzhatoNevezo"
+            );
+
+        if (sor) {
+
+            sor.style.backgroundColor =
+                "#b8f5b8";
+
+        }
+
+    }
+
+});
+   
+   function mentes() {
+
+    console.log("MENTÉS FUT");
+
+    localStorage.setItem(
+        "csapatBeosztas_" + verseny.nev,
+        document.getElementById(
+            "csapatokOldal"
+        ).innerHTML
+    );
+localStorage.setItem(
+    "jelenlevok_" + verseny.nev,
+    JSON.stringify(jelenlevok)
+);
+}
+function frissitCsapatFejlecek() {
+
+    document
+        .querySelectorAll(".csapatDoboz")
+        .forEach(csapat => {
+
+            const cim =
+                csapat.dataset.nev;
+
+            const osszes =
+                csapat.querySelectorAll(
+                    ".csapatTag"
+                ).length;
+
+            const jelen =
+                csapat.querySelectorAll(
+                    '.csapatTag[style*="rgb(184, 245, 184)"]'
+                ).length;
+
+            const fejléc =
+                csapat.querySelector("b");
+
+            if (fejléc) {
+
+               fejléc.innerText =
+                  cim +
+                    " (" +
+                     osszes +
+                    "/" +
+                       jelen +
+                   ")";
+
+            }
+
+        });
+
+}
+function rendezCsapatok() {
+
+    const kontener =
+        document.getElementById(
+            "csapatokOldal"
+        );
+
+    const csapatok =
+        Array.from(
+            kontener.querySelectorAll(
+                ".csapatDoboz"
+            )
+        );
+
+    csapatok.sort((a, b) => {
+
+        const aSzam =
+            parseInt(
+                a.dataset.nev.replace(
+                    "Csapat ",
+                    ""
+                )
+            );
+
+        const bSzam =
+            parseInt(
+                b.dataset.nev.replace(
+                    "Csapat ",
+                    ""
+                )
+            );
+
+        return aSzam - bSzam;
+
+    });
+
+    csapatok.forEach(csapat => {
+
+        kontener.appendChild(
+            csapat
+        );
+
+    });
+
+}
+document
+    .getElementById("ujCsapatBtn")
+    .addEventListener(
+        "click",
+        () => {
+
+           let foglaltSzamok = [];
+
+document
+    .querySelectorAll(".csapatDoboz")
+    .forEach(csapat => {
+
+        const nev =
+            csapat.dataset.nev;
+
+        const szam =
+            parseInt(
+                nev.replace(
+                    "Csapat ",
+                    ""
+                )
+            );
+
+        if (!isNaN(szam)) {
+
+            foglaltSzamok.push(szam);
+
+        }
+
+    });
+
+let ujSzam = 1;
+
+while (
+    foglaltSzamok.includes(
+        ujSzam
+    )
+) {
+
+    ujSzam++;
+
+}
+
+let ujCsapat =
+    document.createElement("div");
+
+ujCsapat.className =
+    "csapatDoboz";
+
+ujCsapat.dataset.nev =
+    "Csapat " + ujSzam;
+
+ujCsapat.style.border =
+    "1px solid #999";
+
+ujCsapat.style.borderRadius =
+    "8px";
+
+ujCsapat.style.padding =
+    "10px";
+
+ujCsapat.style.margin =
+    "10px 0";
+
+ujCsapat.style.minHeight =
+    "100px";
+
+ujCsapat.innerHTML =
+    "<b>Csapat " +
+    ujSzam +
+    " (0/0)</b>";
+
+document
+    .getElementById("csapatokOldal")
+    .appendChild(ujCsapat);
+    rendezCsapatok();
+ujCsapat.addEventListener(
+    "dragover",
+    e => {
+
+        e.preventDefault();
+
+    }
+);
+
+ujCsapat.addEventListener(
+    "drop",
+    e => {
+
+        e.preventDefault();
+
+        console.log("DROP MŰKÖDIK");
+
+        if (!huzottNevezo)
+            return;
+
+        const nevezo =
+            verseny.nevezok.find(
+                n => String(n.id) === String(huzottNevezo)
+            );
+
+        if (!nevezo)
+            return;
+        document
+    .querySelectorAll(
+        '.csapatTag[data-id="' +
+        nevezo.id +
+        '"]'
+    )
+    .forEach(elem => {
+
+        elem.remove();
+
+    });
+        document
+    .querySelectorAll(
+        '[data-id="' + nevezo.id + '"]'
+    )
+    .forEach(elem => {
+
+        if (
+            elem.parentElement.classList.contains(
+                "csapatDoboz"
+            )
+        ) {
+
+            elem.remove();
+
+        }
+
+    });
+
+csapatBeosztas[nevezo.id] =
+    ujCsapat.dataset.nev;
+        const sor =
+    document.querySelector(
+        '.huzhatoNevezo[data-id="' +
+        nevezo.id +
+        '"]'
+    );
+
+if (sor) {
+
+    let csapatInfo =
+        sor.querySelector(".csapatInfo");
+
+    if (!csapatInfo) {
+
+        csapatInfo =
+            document.createElement("span");
+
+        csapatInfo.className =
+            "csapatInfo";
+
+        csapatInfo.style.marginLeft =
+            "10px";
+
+        csapatInfo.style.color =
+            "blue";
+
+        sor.appendChild(csapatInfo);
+
+    }
+
+    csapatInfo.innerText =
+        "🏹 " +
+        csapatBeosztas[nevezo.id];
+
+}
+
+       ujCsapat.innerHTML += `
+    <div
+        class="csapatTag"
+        draggable="true"
+        data-id="${nevezo.id}"
+    >
+        ${nevezo.nev}
+
+        <button
+            class="torlesBtn"
+            data-id="${nevezo.id}"
+        >
+            🗑
+        </button>
+
+    </div>
+`;
+     frissitCsapatFejlecek();  
+     mentes();
+const pipa =
+    document.querySelector(
+        '.jelenletiPipa[data-id="' +
+        nevezo.id +
+        '"]'
+    );
+if (pipa && pipa.checked) {
+
+    const ujTag =
+        ujCsapat.querySelector(
+            '.csapatTag[data-id="' +
+            nevezo.id +
+            '"]'
+        );
+
+    if (ujTag) {
+
+        ujTag.style.backgroundColor =
+            "#b8f5b8";
+
+        }
+
+}
+
+frissitCsapatFejlecek();
+mentes();
+ujCsapat
+    .querySelectorAll(".torlesBtn")
+    .forEach(gomb => {
+
+        gomb.onclick = function() {
+
+            const id =
+    this.dataset.id;
+
+this.parentElement.remove();
+
+            delete csapatBeosztas[id];
+
+            const sor =
+                document.querySelector(
+                    '.huzhatoNevezo[data-id="' +
+                    id +
+                    '"]'
+                );
+
+            if (sor) {
+
+                const csapatInfo =
+                    sor.querySelector(
+                        ".csapatInfo"
+                    );
+
+                if (csapatInfo) {
+
+                    csapatInfo.remove();
+
+                }
+
+            }
+
+            frissitCsapatFejlecek();
+mentes();
+        };
+
+    });
+
+ujCsapat
+    .querySelectorAll(".csapatTag")
+    .forEach(tag => {
+
+        tag.addEventListener(
+            "dragstart",
+            () => {
+
+                huzottNevezo =
+                    tag.dataset.id;
+
+                console.log(
+                    "Csapatból húzva:",
+                    huzottNevezo
+                );
+
+            }
+        );
+
+    });
+
+       }
+);
+        }
+    );
+    let huzottNevezo = null;
+
+document
+    .querySelectorAll(".huzhatoNevezo")
+    .forEach(nevezo => {
+
+        nevezo.addEventListener(
+            "dragstart",
+            () => {
+
+                huzottNevezo =
+                    nevezo.dataset.id;
+
+                console.log(
+                    "Húzott nevező:",
+                    huzottNevezo
+                );
+
+            }
+        );
+
+    });
+   document
+    .querySelectorAll(".jelenletiPipa")
+    .forEach(pipa => {
+
+        pipa.addEventListener(
+            "change",
+            function() {
+
+                const sor =
+                    this.closest(
+                        ".huzhatoNevezo"
+                    );
+
+                if (this.checked) {
+
+                    sor.style.backgroundColor =
+                        "#b8f5b8";
+
+                } else {
+
+                    sor.style.backgroundColor =
+                        "";
+                }
+
+                const id =
+                    this.dataset.id;
+
+                document
+                    .querySelectorAll(
+                        '.csapatTag[data-id="' +
+                        id +
+                        '"]'
+                    )
+                    .forEach(elem => {
+
+                        if (this.checked) {
+
+                            elem.style.backgroundColor =
+                                "#b8f5b8";
+
+                        } else {
+
+                            elem.style.backgroundColor =
+                                "";
+
+                        }
+
+                    });
+             frissitCsapatFejlecek();
+             mentes();
+            }
+        );
+
+    });
+</script>
+
+</body>
+</html>
